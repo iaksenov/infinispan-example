@@ -1,4 +1,4 @@
-package ru.crystals.infinispan.pojo;
+package ru.crystals.example;
 
 import java.io.Serializable;
 

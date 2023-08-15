@@ -1,4 +1,4 @@
-package ru.crystals.infinispan.pojo;
+package ru.crystals.example;
 
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.notifications.Listener;

@@ -12,9 +12,9 @@ dependencies {
             "org.infinispan:infinispan-commons:${versions.libs.infinispan}",
             "org.infinispan:infinispan-component-annotations:${versions.libs.infinispan}",
             "org.infinispan:infinispan-cachestore-jdbc:${versions.libs.infinispan}",
-            "org.infinispan:infinispan-query:${versions.libs.infinispan}",
             "org.infinispan:infinispan-bom:${versions.libs.infinispan}",
 
             "io.micrometer:micrometer-core:${versions.libs.micrometer}",
-            "io.micrometer:micrometer-registry-prometheus:${versions.libs.micrometer}"
+            "io.micrometer:micrometer-registry-prometheus:${versions.libs.micrometer}",
+            'io.prometheus:simpleclient:0.16.0'
 }

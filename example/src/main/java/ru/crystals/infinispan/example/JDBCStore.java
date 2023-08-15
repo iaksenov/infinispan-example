@@ -14,10 +14,10 @@ import org.infinispan.context.Flag;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
-import ru.crystals.infinispan.pojo.CacheListener;
-import ru.crystals.infinispan.pojo.Item;
-import ru.crystals.infinispan.pojo.ItemInterface;
-import ru.crystals.infinispan.pojo.Person;
+import ru.crystals.example.CacheListener;
+import ru.crystals.example.Item;
+import ru.crystals.example.ItemInterface;
+import ru.crystals.example.Person;
 import ru.crystals.shop.Shop;
 
 import java.util.ArrayList;
@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class JDBCStore {
 
@@ -170,7 +169,7 @@ public class JDBCStore {
     private Configuration createConfiguration() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
-        builder.clustering().cacheMode(CacheMode.REPL_SYNC).l1().lifespan(100000L, TimeUnit.DAYS).cleanupTaskFrequency(60, TimeUnit.SECONDS)
+        builder.clustering().cacheMode(CacheMode.REPL_SYNC)
                 // protobuf, need proto schema
 //                .encoding().mediaType("application/x-protostream")
                 // simple text, bad way
