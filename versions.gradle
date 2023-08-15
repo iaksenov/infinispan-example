@@ -1,6 +1,7 @@
 ext.versions = [
     plugins : [
-            springBootVersion       : '2.5.14',
+            docker                  : '0.20.1',
+            springBootVersion       : '2.5.14'
     ],
     libs : [
             infinispan               : '14.0.13.Final', 

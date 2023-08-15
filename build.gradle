@@ -10,12 +10,15 @@ buildscript {
 
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${versions.plugins.springBootVersion}"
+        classpath "gradle.plugin.com.palantir.gradle.docker:gradle-docker:${versions.plugins.docker}"
     }
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
+    apply plugin: 'com.palantir.docker'
+    apply plugin: 'com.palantir.docker-run'
 
     dependencies {
         compileOnly "org.projectlombok:lombok:${versions.libs.lombok}"
@@ -23,6 +26,33 @@ subprojects {
         annotationProcessor "org.projectlombok:lombok:${versions.libs.lombok}"
         testAnnotationProcessor "org.projectlombok:lombok:${versions.libs.lombok}"
     }
+
+    bootJar {
+        archiveFileName = "app.${archiveExtension.get()}"
+    }
+
+    gradle.ext.dockerPath = 'infinispan-example'
+
+    docker {
+        name "${rootProject.dockerRegistry}/${gradle.ext.dockerPath}/${project.name}:${project.version}"
+        copySpec.from("build/libs").into("build/libs")
+        dockerfile new File("${rootProject.projectDir}/Dockerfile".toString())
+        dependsOn bootJar
+    }
+
+    dockerRun {
+        name "${rootProject.dockerRegistry}/${gradle.ext.dockerPath}/${project.name}:${project.version}"
+        image "${project.name}"
+//        volumes 'hostvolume': '/containervolume'
+        ports '7800:7800'
+        daemonize false
+//        env 'MYVAR1': 'MYVALUE1', 'MYVAR2': 'MYVALUE2'
+//        command 'sleep', '100'
+//        arguments '--hostname=custom', '-P'
+    }
+
+    dockerPrepare.dependsOn bootJar
+
 }
 
 allprojects {
