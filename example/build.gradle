@@ -1,0 +1,20 @@
+dependencies {
+    implementation "ch.qos.logback:logback-classic:${versions.libs.logback}",
+
+            "org.postgresql:postgresql:${versions.libs.postgresql}",
+
+            "org.springframework.boot:spring-boot-starter-web:${versions.plugins.springBootVersion}",
+            "org.springframework.boot:spring-boot-starter-actuator:${versions.plugins.springBootVersion}",
+            "org.springframework.boot:spring-boot-starter-parent:${versions.plugins.springBootVersion}",
+
+            "org.infinispan:infinispan-spring-boot-starter-embedded:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-core:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-commons:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-component-annotations:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-cachestore-jdbc:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-query:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-bom:${versions.libs.infinispan}",
+
+            "io.micrometer:micrometer-core:${versions.libs.micrometer}",
+            "io.micrometer:micrometer-registry-prometheus:${versions.libs.micrometer}"
+}

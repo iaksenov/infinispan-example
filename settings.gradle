@@ -1,0 +1,3 @@
+rootProject.name = 'infinispan-example'
+
+include 'example'

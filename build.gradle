@@ -1,0 +1,47 @@
+buildscript {
+    apply from: 'versions.gradle'
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${versions.plugins.springBootVersion}"
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'application'
+
+    dependencies {
+        compileOnly "org.projectlombok:lombok:${versions.libs.lombok}"
+        testCompileOnly "org.projectlombok:lombok:${versions.libs.lombok}"
+        annotationProcessor "org.projectlombok:lombok:${versions.libs.lombok}"
+        testAnnotationProcessor "org.projectlombok:lombok:${versions.libs.lombok}"
+    }
+}
+
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'io.spring.dependency-management'
+
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${versions.plugins.springBootVersion}"
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${versions.libs.springCloudVersion}"
+        }
+    }
+}
+

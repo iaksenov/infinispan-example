@@ -1,0 +1,13 @@
+ext.versions = [
+    plugins : [
+            springBootVersion       : '2.5.14',
+    ],
+    libs : [
+            infinispan               : '14.0.13.Final', 
+            logback                  : '1.2.11',
+            lombok                   : '1.18.22',
+            micrometer               : '1.11.2',
+            postgresql               : '42.6.0',
+            springCloudVersion       : '2020.0.6'
+    ]
+]
