@@ -7,6 +7,10 @@ dependencies {
             "org.springframework.boot:spring-boot-starter-actuator:${versions.plugins.springBootVersion}",
             "org.springframework.boot:spring-boot-starter-parent:${versions.plugins.springBootVersion}",
 
+            "org.springframework.cloud:spring-cloud-starter-bootstrap",
+            "org.springframework.cloud:spring-cloud-starter-consul-discovery",
+            "org.springframework.cloud:spring-cloud-starter-consul-config",
+
             "org.infinispan:infinispan-spring-boot-starter-embedded:${versions.libs.infinispan}",
             "org.infinispan:infinispan-core:${versions.libs.infinispan}",
             "org.infinispan:infinispan-commons:${versions.libs.infinispan}",

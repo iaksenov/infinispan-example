@@ -39,10 +39,11 @@ public class InfinispanConfig {
                 .jmx().enable()
                 .transport()
                 .clusterName(CLUSTER_NAME)
-                //.stack("DNS_PING")
-                .stack("TCPPING")
+                .stack("DNS_PING")
+//                .stack("TCPPING")
                 .defaultTransport()
                 .addProperty("configurationFile", "tcp-nio-2.xml");
+
 
         return global::build;
     }

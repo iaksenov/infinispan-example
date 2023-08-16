@@ -1,0 +1,29 @@
+version: "3.7"
+
+services:
+
+  infinispan-example1:
+    image: infinispan-example:0.0.1
+    container_name: infinispan-example1
+    env_file: .env
+ #   depends_on: 
+ #     - consul
+    ports:
+      - 7800:7800
+
+  infinispan-example2:
+    image: infinispan-example:0.0.1
+    container_name: infinispan-example2
+    env_file: .env
+#    depends_on: 
+#      - consul
+    ports:
+      - 7801:7800
+
+#  consul:
+#    image: consul
+#    ports:
+#      - 8500:8500
+#      - 8600:8600
+#    command: ["agent", "-dev", "-ui", "-http-port","8500", "-client", "0.0.0.0"]
+

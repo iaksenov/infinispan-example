@@ -32,7 +32,7 @@ public class ScheduledReader {
         personCache = cacheManager.getCache("person");
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 15000)
     public void readAll() {
         AdvancedCache<String, Person> aCache = personCache
                 .getAdvancedCache()

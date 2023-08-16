@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    consul:
+      host: 192.168.1.201
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}

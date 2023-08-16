@@ -13,11 +13,16 @@
               thread_pool.max_threads="200"
               thread_pool.keep_alive_time="30000"/>
     <RED/>
-    <TCPPING async_discovery="false"
-             initial_hosts="${jgroups.tcpping.initial_hosts:localhost[7800],localhost[7801]}"
-             port_range="0"/>
+    <dns.DNS_PING dns_address="192.168.1.201:8600"
+                  dns_query="infinispan-example.service.consul"
+                  dns_record_type="SRV"
+                  probe_transport_ports="true"
+    />
     <MERGE3 min_interval="10000"
             max_interval="30000"/>
+    <TCPPING async_discovery="false"
+             initial_hosts="${jgroups.tcpping.initial_hosts:localhost[7800],localhost[7801]}"
+             port_range="10"/>
     <FD_SOCK2/>
     <FD_ALL3 timeout="30000"/>
     <VERIFY_SUSPECT2 timeout="1500"/>

@@ -1,3 +1,6 @@
+spring:
+  application:
+    name: infinispan-example
 management:
   endpoints:
     web:
@@ -10,3 +13,8 @@ management:
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
+
+logging:
+  level:
+    org.jgroups: DEBUG
+    org.jgroups.protocols.dns: TRACE
