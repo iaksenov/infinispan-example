@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * Какая-то сущность магазина для кэша
+ */
 @Data
 @Builder
 public class Shop implements Serializable {
