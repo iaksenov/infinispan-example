@@ -1,3 +1,4 @@
 rootProject.name = 'infinispan-example'
 
 include 'example'
+include 'consul-component'

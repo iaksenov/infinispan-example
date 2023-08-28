@@ -83,7 +83,7 @@ public class ScheduledReader {
         AdvancedCache<String, Person> aCache = personCache
                 .getAdvancedCache()
                 // флаг, чтобы предотвратить чтение из БД
-                // иначе каждое обращение к кэшу будет выполнять SELECT
+                // иначе каждое обращение к кэшу будет выполнять SELECT(-ы)
                 .withFlags(Flag.SKIP_CACHE_LOAD);
 
         int clusterSize = cacheManager.getMembers().size();

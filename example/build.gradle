@@ -1,4 +1,10 @@
 dependencies {
+
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+    implementation project(':consul-component')
+
     implementation "ch.qos.logback:logback-classic:${versions.libs.logback}",
 
             "org.postgresql:postgresql:${versions.libs.postgresql}",
@@ -21,4 +27,8 @@ dependencies {
             "io.micrometer:micrometer-core:${versions.libs.micrometer}",
             "io.micrometer:micrometer-registry-prometheus:${versions.libs.micrometer}",
             'io.prometheus:simpleclient:0.16.0'
+}
+
+repositories {
+    mavenCentral()
 }

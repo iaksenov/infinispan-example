@@ -10,16 +10,28 @@ import org.infinispan.spring.starter.embedded.InfinispanCacheConfigurer;
 import org.infinispan.spring.starter.embedded.InfinispanGlobalConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.crystals.consul.ConsulComponent;
+
+import java.io.IOException;
 
 @Configuration
 public class InfinispanConfig {
 
-    public static final String CLUSTER_NAME = "infinispan-example-cluster";
+    public static final String CLUSTER_NAME = System.getenv("INFINISPAN_CLUSTER_NAME");
 
     public static final String CACHE_CONFIGURATION_NAME = "ReplicatedStored";
 
+    private static final int CONSUL_TIMEOUT = 5000;
+
     @Bean
-    public InfinispanGlobalConfigurer globalConfig() {
+    public InfinispanGlobalConfigurer globalConfig() throws IOException {
+        // Register cluster in Consul before start with status = passing
+        ConsulComponent consulComponent = new ConsulComponent(CLUSTER_NAME);
+        String infinispan_tcp_port = System.getenv("INFINISPAN_TCP_PORT");
+        int port = Integer.parseInt(infinispan_tcp_port);
+        consulComponent.registerService(CONSUL_TIMEOUT, port);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> consulComponent.unregisterService(CONSUL_TIMEOUT)));
+
         GlobalConfigurationBuilder global = new GlobalConfigurationBuilder();
 
         global.cacheContainer()
@@ -58,9 +70,8 @@ public class InfinispanConfig {
                 // initial_hosts - список хостов и портов, среди которых будут искаться ноды
                 // .stack("TCPPING")
                 .defaultTransport()
-                .initialClusterSize(2)
+                .initialClusterSize(1)
                 .addProperty("configurationFile", "tcp-nio-2.xml");
-
 
         return global::build;
     }

@@ -8,36 +8,36 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="urn:org:jgroups"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd urn:org:jgroups ">
-    <TCP_NIO2 bind_port="7800"
+
+    <TCP_NIO2 bind_port="${INFINISPAN_TCP_PORT:7800}"
+              bind_addr="${HOST_ADDRESS}"
               thread_pool.min_threads="0"
               thread_pool.max_threads="200"
               thread_pool.keep_alive_time="30000"/>
     <RED/>
-    <dns.DNS_PING dns_address="192.168.1.201:8600"
-                  dns_query="infinispan-example.service.consul"
+
+    <dns.DNS_PING dns_address="${CONSUL_HOST}:${CONSUL_DNS_PORT}"
+                  dns_query="${INFINISPAN_CLUSTER_NAME}.service.consul"
                   dns_record_type="SRV"
-                  probe_transport_ports="true"
-                  send_cache_on_join="true"
-    />
-    <MERGE3 min_interval="10000"
-            max_interval="30000"/>
-    <TCPPING async_discovery="false"
-             port_range="2"/>
-    <!--             initial_hosts="${jgroups.tcpping.initial_hosts:localhost[7800],localhost[7801]}"-->
+                  probe_transport_ports="false"
+                  send_cache_on_join="true"/>
+
+    <MERGE3 min_interval="10000" max_interval="30000"/>
+    <TCPPING async_discovery="false" port_range="1"/>
     <FD_SOCK2/>
     <FD_ALL3 timeout="30000"/>
     <VERIFY_SUSPECT2 timeout="1500"/>
     <BARRIER/>
     <pbcast.NAKACK2 use_mcast_xmit="false"/>
     <UNICAST3/>
-    <pbcast.STABLE desired_avg_gossip="50000"
-                   max_bytes="4M"/>
-    <pbcast.GMS print_local_addr="true" join_timeout="2000"/>
-    <UFC max_credits="2M"
-         min_threshold="0.4"/>
-    <MFC max_credits="2M"
-         min_threshold="0.4"/>
+    <pbcast.STABLE desired_avg_gossip="50000" max_bytes="4M"/>
+
+    <pbcast.GMS print_local_addr="true" join_timeout="5000" max_join_attempts="5"/>
+
+    <UFC max_credits="2M" min_threshold="0.4"/>
+    <MFC max_credits="2M" min_threshold="0.4"/>
     <FRAG2 frag_size="60K"/>
     <!--RSVP resend_interval="2000" timeout="10000"/-->
     <pbcast.STATE_TRANSFER/>
+
 </config>
