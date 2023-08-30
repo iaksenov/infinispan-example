@@ -4,7 +4,7 @@ ext.versions = [
             springBootVersion       : '2.5.14'
     ],
     libs : [
-            infinispan               : '14.0.13.Final', 
+            infinispan               : '14.0.14.Final',
             logback                  : '1.2.11',
             lombok                   : '1.18.26',
             micrometer               : '1.11.2',

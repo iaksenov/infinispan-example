@@ -1,5 +1,6 @@
 package ru.crystals.consul;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.EqualsAndHashCode;
@@ -36,6 +37,7 @@ public class ConsulComponent {
     public ConsulComponent(String applicationName) {
         this.applicationName = applicationName;
         instanceId = applicationName + "-" + UUID.randomUUID();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     public void registerService(int timeout, int port) throws IOException {
@@ -105,7 +107,7 @@ public class ConsulComponent {
         Check check = new Check();
 
         // это всё надо в конфиг:
-        check.setDeregisterCriticalServiceAfter("10s");
+        check.setDeregisterCriticalServiceAfter("8h");
         check.setTcp(ipAddress+":"+port);
         check.setTimeout("10s");
         check.setInterval("10s");

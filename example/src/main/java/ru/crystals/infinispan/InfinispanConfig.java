@@ -6,7 +6,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
-import org.infinispan.spring.starter.embedded.InfinispanCacheConfigurer;
 import org.infinispan.spring.starter.embedded.InfinispanGlobalConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,16 +18,17 @@ public class InfinispanConfig {
 
     public static final String CLUSTER_NAME = System.getenv("INFINISPAN_CLUSTER_NAME");
 
-    public static final String CACHE_CONFIGURATION_NAME = "ReplicatedStored";
-
     private static final int CONSUL_TIMEOUT = 5000;
 
     @Bean
     public InfinispanGlobalConfigurer globalConfig() throws IOException {
-        // Register cluster in Consul before start with status = passing
+
         ConsulComponent consulComponent = new ConsulComponent(CLUSTER_NAME);
-        String infinispan_tcp_port = System.getenv("INFINISPAN_TCP_PORT");
+        String infinispan_tcp_port = System.getenv(Consts.INFINISPAN_TCP_PORT);
         int port = Integer.parseInt(infinispan_tcp_port);
+
+        // Регистрируем infinispan кластер с его именем до того, как он запустится и сделает DNS запрос в Consul.
+        // Это необходимо, что два одновременно стартуюших сервиса сразу увидели друг-друга.
         consulComponent.registerService(CONSUL_TIMEOUT, port);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> consulComponent.unregisterService(CONSUL_TIMEOUT)));
 
@@ -76,8 +76,15 @@ public class InfinispanConfig {
         return global::build;
     }
 
-    @Bean()
-    public InfinispanCacheConfigurer storedReplicatedCacheConfig() {
+    /**
+     * Конфиг, который будет использоваться по-умолчанию.
+     * В качестве имя конфига надо указать одно из имён кэшей, для остальных он будет использоваться как шаблон.
+     * Если указать другое имя, то в БД будут созданы и не будут использоваться лишние таблицы с этим именем.
+     *
+     * @return конфиг
+     */
+    @Bean(Consts.PERSON_CACHE)
+    public org.infinispan.configuration.cache.Configuration storedReplicatedCacheConfig()  {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
         // Режим работы кэша - синхронная репликация, т.е. все ноды имеют полную копию кэша.
@@ -113,8 +120,10 @@ public class InfinispanConfig {
                 // один store на всех, без сегментации, то что надо
                 .shared(true)
 
-                // прогрев кэша на страте нам нужен
+                // нам нужен прогрев кэша на страте
                 .preload(true)
+
+                // далее идёт описание автоматически создаваемой схемы БД
                 .table()
 
                 // дропать схему на выходе нам не надо
@@ -127,15 +136,18 @@ public class InfinispanConfig {
                 .dataColumnName("payload").dataColumnType("bytea")
                 .timestampColumnName("ts").timestampColumnType("BIGINT")
                 .segmentColumnName("segment").segmentColumnType("INT")
-                .connectionPool()
-                .connectionUrl("jdbc:postgresql://192.168.1.201:5432/infinispan")
+
+                // С пулом, который идёт в комплекте (io.agroal) есть проблема восстановления коннектов при обрыве вязи с БД.
+                // Вместо него мы будем использовать простой пересоздаваемый коннект, а снаружи будет pg_bouncer.
+                //  .connectionPool()
+                .simpleConnection()
+
+                .connectionUrl("jdbc:postgresql://192.168.1.201:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=omni")
                 .username("postgres")
                 .password("postgres")
                 .driverClass("org.postgresql.Driver");
 
-        return manager -> {
-            manager.defineConfiguration(CACHE_CONFIGURATION_NAME, builder.build());
-        };
+        return builder.build();
     }
 
 }
