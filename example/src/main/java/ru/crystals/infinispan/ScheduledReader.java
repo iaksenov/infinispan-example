@@ -16,6 +16,9 @@ import ru.crystals.example.Item;
 import ru.crystals.example.Person;
 import ru.crystals.shop.Shop;
 
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,13 +29,14 @@ import static ru.crystals.infinispan.Consts.SHOP_CACHE;
 
 @EnableScheduling
 @Component
+@Transactional
 public class ScheduledReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledReader.class);
 
     private final EmbeddedCacheManager cacheManager;
 
-    private final Cache<String, Person> personCache;
+    private final Cache<Long, Person> personCache;
     private final Cache<String, Shop> shopCache;
 
     private final boolean putEnable;
@@ -53,42 +57,62 @@ public class ScheduledReader {
     }
 
     @Scheduled(fixedDelay = 2000)
-    public void readAll() {
-
+    public void putSomeValues() {
         if (putEnable) {
+            AdvancedCache<Long, Person> pcache = personCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+            TransactionManager transactionManager = pcache.getTransactionManager();
             try {
-                AdvancedCache<String, Person> pcache = personCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-                String time = String.valueOf(System.currentTimeMillis());
-                Person person = new Person(time, "BBB-" + time);
+                transactionManager.begin();
+
+                long keyLong = System.currentTimeMillis();
+                String keyStr = String.valueOf(keyLong);
+
+                Person person = new Person(keyStr, "BBB-" + keyStr);
                 person.setItems(Stream.of(new Item("1", 1L)).collect(Collectors.toList()));
-                pcache.put(time, person);
+
+                pcache.put(keyLong, person);
+                // generate exception
+//                pcache.put(null, person);
+
+                transactionManager.commit();
+
                 LOG.info("PUT OK!");
             } catch (Exception e) {
+                try {
+                    if (transactionManager.getTransaction() != null) {
+                        transactionManager.rollback();
+                    }
+                } catch (SystemException ex) {
+                    LOG.error("ROLLBACK FAILED !!! ", e);
+                }
                 LOG.error("PUT FAILED !!! ", e);
             }
         }
+    }
 
-        AdvancedCache<String, Person> aCache = personCache
+    @Scheduled(fixedDelay = 2000)
+    public void readAll() {
+        AdvancedCache<Long, Person> aCache = personCache
                 .getAdvancedCache()
-                // флаг, чтобы предотвратить чтение из БД
+                // флаг SKIP_CACHE_LOAD, чтобы предотвратить чтение из БД
                 // иначе каждое обращение к кэшу будет выполнять SELECT(-ы)
                 .withFlags(Flag.SKIP_CACHE_LOAD);
 
         LOG.info("Time = {}, cluster size = {}, isCoordinator = {}", LocalTime.now(), cacheManager.getMembers().size(), cacheManager.isCoordinator());
         LOG.info("CacheManager cluster health: {}", cacheManager.getHealth().getClusterHealth().toJson());
 
-        CacheSet<Map.Entry<String, Person>> entries = aCache.entrySet();
+        CacheSet<Map.Entry<Long, Person>> entries = aCache.entrySet();
         long s = 0;
-        for (Map.Entry<String, Person> entry : entries) {
+        for (Map.Entry<Long, Person> entry : entries) {
             s += entry.getValue().getItemsSum();
         }
-
         LOG.info("Cache size = {}, items sum = {}", entries.size(), s);
+
+//        Тест того, что не выполняется десериализация при обращении к одной и той же сущности.
+//        Это достижимо только при mediaType="application/x-java-object"
 
 //        Person person1 = aCache.get("1");
 //        Person person1_2 = aCache.get("1");
-// Тест того, что не выполняется десериализация при обращении к одной и той же сущности.
-// Это достижимо только при mediaType="application/x-java-object"
 //        LOG.info("Got objects are equals is {}", (person1 == person1_2));
 
         AdvancedCache<String, Shop> aShopCache = shopCache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD);

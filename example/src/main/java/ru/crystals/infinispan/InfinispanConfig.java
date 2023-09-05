@@ -1,5 +1,6 @@
 package ru.crystals.infinispan;
 
+import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -7,6 +8,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.spring.starter.embedded.InfinispanGlobalConfigurer;
+import org.infinispan.transaction.TransactionMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.crystals.consul.ConsulComponent;
@@ -59,11 +61,11 @@ public class InfinispanConfig {
                 // dns_query - запрашиваемое имя, например "infinispan-example.service.consul"
                 // dns_record_type="SRV"
 
-                // ПРОБЛЕМА: SpringBoot зарегистрирует себя в Consul после старта приложения,
-                // а тут будет сразу попытка найти по DNS все узлы.
+                // ПРОБЛЕМА: SpringBoot зарегистрирует себя в Consul после старта приложения, а тут будет сразу попытка найти по DNS все узлы.
                 // Т.е. если две ноды одновременно стартанут, то каждая решит, что она одна и назначит себя координатором.
-                // Спустя несколько секунд, они найдут друг друга, но данные отправленные нодой репликацией не достигнут второй ноды,
-                // хотя будут сохранены в общее хранилище.
+                // Поэтому регистрация в Consul выполняется вручную до запуска Infinispan.
+                // Регистрируемое имя соответствует тому, которое указано в конфиге для DNS_PNG.
+                // Оно должно соответствовать dns_query в конифге для DNS_PING.
                 .stack("DNS_PING")
 
                 // обнаружение узлов будет выполняться TCP запросами
@@ -78,14 +80,14 @@ public class InfinispanConfig {
 
     /**
      * Конфиг, который будет использоваться по-умолчанию.
-     * В качестве имя конфига надо указать одно из имён кэшей, для остальных он будет использоваться как шаблон.
-     * Если указать другое имя, то в БД будут созданы и не будут использоваться лишние таблицы с этим именем.
      *
      * @return конфиг
      */
-    @Bean(Consts.PERSON_CACHE)
+    @Bean
     public org.infinispan.configuration.cache.Configuration storedReplicatedCacheConfig()  {
         ConfigurationBuilder builder = new ConfigurationBuilder();
+
+        builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL);
 
         // Режим работы кэша - синхронная репликация, т.е. все ноды имеют полную копию кэша.
         // При изменениях, координатор кластера синхронно отправляет всем участникам сообщения.
@@ -105,16 +107,18 @@ public class InfinispanConfig {
 
                 // хранение java объектов в jvm heap без сериализации
                 // Это больше всего подходит под задачу
-                .encoding().mediaType("application/x-java-object")
+                .encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .statistics().enabled(true)
 
                 // кэш будет персистентным
                 .persistence()
+
                 // в режиме passivation данные, которые не влезают в память или редко используются будут сброшены в store,
                 // нам такое поведение не нужно
                 .passivation(false)
 
                 .addStore(JdbcStringBasedStoreConfigurationBuilder.class)
+
                 .dialect(DatabaseType.POSTGRES)
 
                 // один store на всех, без сегментации, то что надо
@@ -146,6 +150,9 @@ public class InfinispanConfig {
                 .username("postgres")
                 .password("postgres")
                 .driverClass("org.postgresql.Driver");
+
+        // это шаблон
+        builder.template(true);
 
         return builder.build();
     }
