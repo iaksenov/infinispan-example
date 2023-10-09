@@ -9,8 +9,12 @@
         xmlns="urn:org:jgroups"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd urn:org:jgroups ">
 
-    <TCP_NIO2 bind_port="7800"
+    <TCP_NIO2 bind_port="${INFINISPAN_TCP_PORT}"
               bind_addr="GLOBAL"
+              port_range="5"
+              receive_on_all_interfaces="false"
+              external_addr="${HOST_ADDRESS}"
+              external_port="${HOST_PORT}"
               thread_pool.min_threads="0"
               thread_pool.max_threads="200"
               thread_pool.keep_alive_time="30000"
@@ -20,7 +24,7 @@
     <dns.DNS_PING dns_address="${CONSUL_HOST}:${CONSUL_DNS_PORT}"
                   dns_query="${INFINISPAN_CLUSTER_NAME}.service.consul"
                   dns_record_type="SRV"
-                  probe_transport_ports="true"
+                  probe_transport_ports="false"
                   send_cache_on_join="false"/>
 
     <MERGE3 min_interval="10000" max_interval="30000"/>
@@ -33,7 +37,7 @@
     <UNICAST3/>
     <pbcast.STABLE desired_avg_gossip="50000" max_bytes="4M"/>
 
-    <pbcast.GMS print_local_addr="true" join_timeout="2000" max_join_attempts="5"/>
+    <pbcast.GMS print_local_addr="true" join_timeout="10000" max_join_attempts="5" print_view_details="true"/>
 
     <UFC max_credits="2M" min_threshold="0.4"/>
     <MFC max_credits="2M" min_threshold="0.4"/>

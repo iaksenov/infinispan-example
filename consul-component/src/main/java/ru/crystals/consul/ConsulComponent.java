@@ -48,7 +48,7 @@ public class ConsulComponent {
 
             InetUtils inetUtils = new InetUtils(new InetUtilsProperties());
 //            String ipAddress = inetUtils.findFirstNonLoopbackHostInfo().getIpAddress();
-            String ipAddress = System.getenv(CONSUL_HOST);
+            String ipAddress = System.getenv("HOST_ADDRESS");
             RegisterPayload payload = makeRegisterPayload(applicationName, instanceId, ipAddress, port);
             String content = objectMapper.writeValueAsString(payload);
             System.out.println(content);

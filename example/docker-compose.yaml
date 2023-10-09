@@ -9,6 +9,7 @@ services:
     environment:
       - INFINISPAN_TCP_PORT=7800
       - HOST_ADDRESS=192.168.1.201
+      - HOST_PROT=7800
       - CONSUL_HOST=192.168.1.201
       - CONSUL_PORT=8500
     network_mode: bridge
@@ -28,6 +29,7 @@ services:
     environment:
       - INFINISPAN_TCP_PORT=7801
       - HOST_ADDRESS=192.168.1.201
+      - HOST_PROT=7801
       - CONSUL_HOST=192.168.1.201
       - CONSUL_PORT=8500    
     network_mode: bridge
