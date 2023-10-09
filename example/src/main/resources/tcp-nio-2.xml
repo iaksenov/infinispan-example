@@ -9,8 +9,8 @@
         xmlns="urn:org:jgroups"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd urn:org:jgroups ">
 
-    <TCP_NIO2 bind_port="${INFINISPAN_TCP_PORT:7800}"
-              bind_addr="${HOST_ADDRESS}"
+    <TCP_NIO2 bind_port="7800"
+              bind_addr="GLOBAL"
               thread_pool.min_threads="0"
               thread_pool.max_threads="200"
               thread_pool.keep_alive_time="30000"
@@ -20,7 +20,7 @@
     <dns.DNS_PING dns_address="${CONSUL_HOST}:${CONSUL_DNS_PORT}"
                   dns_query="${INFINISPAN_CLUSTER_NAME}.service.consul"
                   dns_record_type="SRV"
-                  probe_transport_ports="false"
+                  probe_transport_ports="true"
                   send_cache_on_join="false"/>
 
     <MERGE3 min_interval="10000" max_interval="30000"/>

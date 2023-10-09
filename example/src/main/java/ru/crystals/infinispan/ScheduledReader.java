@@ -16,8 +16,6 @@ import ru.crystals.example.Item;
 import ru.crystals.example.Person;
 import ru.crystals.shop.Shop;
 
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.util.Map;
@@ -60,9 +58,9 @@ public class ScheduledReader {
     public void putSomeValues() {
         if (putEnable) {
             AdvancedCache<Long, Person> pcache = personCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-            TransactionManager transactionManager = pcache.getTransactionManager();
+//            TransactionManager transactionManager = pcache.getTransactionManager();
             try {
-                transactionManager.begin();
+//                transactionManager.begin();
 
                 long keyLong = System.currentTimeMillis();
                 String keyStr = String.valueOf(keyLong);
@@ -74,17 +72,17 @@ public class ScheduledReader {
                 // generate exception
 //                pcache.put(null, person);
 
-                transactionManager.commit();
+//                transactionManager.commit();
 
                 LOG.info("PUT OK!");
             } catch (Exception e) {
-                try {
-                    if (transactionManager.getTransaction() != null) {
-                        transactionManager.rollback();
-                    }
-                } catch (SystemException ex) {
-                    LOG.error("ROLLBACK FAILED !!! ", e);
-                }
+//                try {
+//                    if (transactionManager.getTransaction() != null) {
+//                        transactionManager.rollback();
+//                    }
+//                } catch (SystemException ex) {
+//                    LOG.error("ROLLBACK FAILED !!! ", e);
+//                }
                 LOG.error("PUT FAILED !!! ", e);
             }
         }

@@ -47,7 +47,8 @@ public class ConsulComponent {
             request.setHeader(new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json"));
 
             InetUtils inetUtils = new InetUtils(new InetUtilsProperties());
-            String ipAddress = inetUtils.findFirstNonLoopbackHostInfo().getIpAddress();
+//            String ipAddress = inetUtils.findFirstNonLoopbackHostInfo().getIpAddress();
+            String ipAddress = System.getenv(CONSUL_HOST);
             RegisterPayload payload = makeRegisterPayload(applicationName, instanceId, ipAddress, port);
             String content = objectMapper.writeValueAsString(payload);
             System.out.println(content);
