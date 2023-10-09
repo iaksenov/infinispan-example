@@ -9,12 +9,12 @@
         xmlns="urn:org:jgroups"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd urn:org:jgroups ">
 
-    <TCP_NIO2 bind_port="${INFINISPAN_TCP_PORT}"
+    <TCP_NIO2 bind_port="7800"
               bind_addr="GLOBAL"
               port_range="5"
               receive_on_all_interfaces="false"
               external_addr="${HOST_ADDRESS}"
-              external_port="${HOST_PORT}"
+              external_port="${INFINISPAN_TCP_PORT}"
               thread_pool.min_threads="0"
               thread_pool.max_threads="200"
               thread_pool.keep_alive_time="30000"
