@@ -14,7 +14,11 @@ management:
       percentiles-histogram:
         "[http.server.requests]": true
 
+server:
+  port: 8080
+
 logging:
   level:
-    org.jgroups: DEBUG
-    org.jgroups.protocols.dns: TRACE
+    org.infinispan.interceptors: OFF
+    org.jgroups: OFF
+    ru.crystals: INFO

@@ -8,6 +8,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.spring.starter.embedded.InfinispanGlobalConfigurer;
+import org.infinispan.transaction.TransactionMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.crystals.consul.ConsulComponent;
@@ -86,7 +87,7 @@ public class InfinispanConfig {
     public org.infinispan.configuration.cache.Configuration storedReplicatedCacheConfig()  {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
-//        builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL);
+        builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL);
 
         // Режим работы кэша - синхронная репликация, т.е. все ноды имеют полную копию кэша.
         // При изменениях, координатор кластера синхронно отправляет всем участникам сообщения.
@@ -145,9 +146,9 @@ public class InfinispanConfig {
                 //  .connectionPool()
                 .simpleConnection()
 
-                .connectionUrl("jdbc:postgresql://192.168.1.201:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=omni")
+                .connectionUrl("jdbc:postgresql://192.168.1.28:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=omni")
                 .username("postgres")
-                .password("postgres")
+                .password("Set324@_p0stgres012!")
                 .driverClass("org.postgresql.Driver");
 
         // это шаблон

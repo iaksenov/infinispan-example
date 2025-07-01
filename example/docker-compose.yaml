@@ -1,25 +1,71 @@
-version: "3.7"
-
 services:
 
   infinispan-example1:
     image: infinispan-example:0.0.1
     container_name: infinispan-example1
-    env_file: .env
+    env_file:
+      - ./.env
     environment:
+      - PUT_ENABLE=true
       - INFINISPAN_TCP_PORT=7800
-    network_mode: bridge
+      - EXT_HTTP_PORT=8080
     ports:
-      - 7800:7800
-      - 8080:8080
+      - "0.0.0.0:7800:7800"
+      - "0.0.0.0:8080:8080"
+    restart: always
 
   infinispan-example2:
     image: infinispan-example:0.0.1
     container_name: infinispan-example2
-    env_file: .env
+    env_file:
+       - ./.env
     environment:
+      - PUT_ENABLE=false
       - INFINISPAN_TCP_PORT=7801
-    network_mode: bridge
+      - EXT_HTTP_PORT=8081
     ports:
-      - 7801:7800
-      - 8081:8080
+      - "0.0.0.0:7801:7800"
+      - "0.0.0.0:8081:8080"
+    restart: always
+
+  infinispan-example3:
+    image: infinispan-example:0.0.1
+    container_name: infinispan-example3
+    env_file:
+      - ./.env
+    environment:
+      - PUT_ENABLE=false
+      - INFINISPAN_TCP_PORT=7802
+      - EXT_HTTP_PORT=8082
+    ports:
+      - "0.0.0.0:7802:7800"
+      - "0.0.0.0:8082:8080"
+    restart: always
+
+  infinispan-example4:
+    image: infinispan-example:0.0.1
+    container_name: infinispan-example4
+    env_file:
+      - ./.env
+    environment:
+      - PUT_ENABLE=false
+      - INFINISPAN_TCP_PORT=7803
+      - EXT_HTTP_PORT=8083
+    ports:
+      - "0.0.0.0:7803:7800"
+      - "0.0.0.0:8083:8080"
+    restart: always
+
+  infinispan-example5:
+    image: infinispan-example:0.0.1
+    container_name: infinispan-example5
+    env_file:
+      - ./.env
+    environment:
+      - PUT_ENABLE=false
+      - INFINISPAN_TCP_PORT=7804
+      - EXT_HTTP_PORT=8084
+    ports:
+      - "0.0.0.0:7804:7800"
+      - "0.0.0.0:8084:8080"
+    restart: always

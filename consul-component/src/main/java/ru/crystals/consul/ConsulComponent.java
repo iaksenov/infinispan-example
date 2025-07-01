@@ -108,10 +108,10 @@ public class ConsulComponent {
         Check check = new Check();
 
         // это всё надо в конфиг:
-        check.setDeregisterCriticalServiceAfter("8h");
+        check.setDeregisterCriticalServiceAfter("1m");
         check.setTcp(ipAddress+":"+port);
         check.setTimeout("10s");
-        check.setInterval("10s");
+        check.setInterval("3s");
         payload.setCheck(check);
 
         return payload;
