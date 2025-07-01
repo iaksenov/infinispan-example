@@ -1,6 +1,20 @@
 spring:
   application:
     name: infinispan-example
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    username: postgres
+    password: Set324@_p0stgres012!
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.1.28:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=infinispan-test
+    hikari:
+      schema: public
+      maximum-pool-size: 5
+      auto-commit: true
+      minimum-idle: 1
+      data-source-properties:
+        reWriteBatchedInserts: true
+
 management:
   endpoints:
     web:

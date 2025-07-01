@@ -8,10 +8,12 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:${versions.libs.logback}",
 
             "org.postgresql:postgresql:${versions.libs.postgresql}",
+            "com.zaxxer:HikariCP:${versions.libs.hikari}",
 
             "org.springframework.boot:spring-boot-starter-web:${versions.plugins.springBootVersion}",
             "org.springframework.boot:spring-boot-starter-actuator:${versions.plugins.springBootVersion}",
             "org.springframework.boot:spring-boot-starter-parent:${versions.plugins.springBootVersion}",
+            "org.springframework.boot:spring-boot-starter-jdbc:${versions.plugins.springBootVersion}",
 
             "org.springframework.cloud:spring-cloud-starter-bootstrap",
             "org.springframework.cloud:spring-cloud-starter-consul-discovery",

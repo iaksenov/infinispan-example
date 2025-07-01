@@ -1,5 +1,6 @@
 package ru.crystals.infinispan;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
@@ -9,18 +10,30 @@ import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.spring.starter.embedded.InfinispanGlobalConfigurer;
 import org.infinispan.transaction.TransactionMode;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.crystals.consul.ConsulComponent;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.Hashtable;
 
 @Configuration
+@EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class InfinispanConfig {
 
     public static final String CLUSTER_NAME = System.getenv("INFINISPAN_CLUSTER_NAME");
 
     private static final int CONSUL_TIMEOUT = 5000;
+    private static final String JNDI_DATA_SOURCE = "java:comp/env/jdbc/hikari-infinispan";
 
     @Bean
     public InfinispanGlobalConfigurer globalConfig() throws IOException {
@@ -79,12 +92,48 @@ public class InfinispanConfig {
     }
 
     /**
+     * Run java with :
+     * -Djava.naming.factory.initial=org.apache.naming.java.javaURLContextFactory
+     *
+     * @return
+     * @throws NamingException
+     */
+    private InitialContext getInitialContext() throws NamingException {
+        Hashtable<String, String> env = new Hashtable<>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.naming.java.javaURLContextFactory");
+        env.put(Context.URL_PKG_PREFIXES, "org.apache.naming");
+        return new InitialContext(env);
+    }
+
+    @Bean
+    public DataSourceProperties dataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource.hikari")
+    public DataSource dataSource(@Qualifier("dataSourceProperties") DataSourceProperties dataSourceProperties) throws NamingException {
+        HikariDataSource hds = dataSourceProperties
+                .initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
+        InitialContext ic = getInitialContext();
+        ic.createSubcontext("java:comp")
+                .createSubcontext("env")
+                .createSubcontext("jdbc");
+        // Регистрируем ds по JNDI имени
+        ic.bind(JNDI_DATA_SOURCE, hds);
+        ic.close();
+        return hds;
+    }
+
+    /**
      * Конфиг, который будет использоваться по-умолчанию.
      *
      * @return конфиг
      */
     @Bean
-    public org.infinispan.configuration.cache.Configuration storedReplicatedCacheConfig()  {
+    public org.infinispan.configuration.cache.Configuration storedReplicatedCacheConfig(DataSource dataSource)  {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
         builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL);
@@ -141,15 +190,17 @@ public class InfinispanConfig {
                 .timestampColumnName("ts").timestampColumnType("BIGINT")
                 .segmentColumnName("segment").segmentColumnType("INT")
 
+                // Data source получаемый по JNDI name:
+                .dataSource()
+                .jndiUrl(JNDI_DATA_SOURCE);
+
                 // С пулом, который идёт в комплекте (io.agroal) есть проблема восстановления коннектов при обрыве вязи с БД.
                 // Вместо него мы будем использовать простой пересоздаваемый коннект, а снаружи будет pg_bouncer.
-                //  .connectionPool()
-                .simpleConnection()
-
-                .connectionUrl("jdbc:postgresql://192.168.1.28:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=omni")
-                .username("postgres")
-                .password("Set324@_p0stgres012!")
-                .driverClass("org.postgresql.Driver");
+//                .simpleConnection()
+//                .connectionUrl("jdbc:postgresql://192.168.1.28:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=omni")
+//                .username("postgres")
+//                .password("Set324@_p0stgres012!")
+//                .driverClass("org.postgresql.Driver");
 
         // это шаблон
         builder.template(true);

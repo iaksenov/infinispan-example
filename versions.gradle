@@ -4,12 +4,14 @@ ext.versions = [
             springBootVersion       : '2.5.14'
     ],
     libs : [
+//            infinispan               : '15.2.4.Final',
 //            infinispan               : '14.0.14.Final',
             infinispan               : '14.0.34.Final',
             logback                  : '1.2.11',
             lombok                   : '1.18.26',
             micrometer               : '1.11.2',
             postgresql               : '42.6.0',
-            springCloudVersion       : '2020.0.6'
+            springCloudVersion       : '2020.0.6',
+            hikari                   : '6.3.0'
     ]
 ]
