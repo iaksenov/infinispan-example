@@ -19,7 +19,7 @@ dependencies {
             "org.springframework.cloud:spring-cloud-starter-consul-discovery",
             "org.springframework.cloud:spring-cloud-starter-consul-config",
 
-            "org.infinispan:infinispan-spring-boot-starter-embedded:${versions.libs.infinispan}",
+            "org.infinispan:infinispan-spring-boot3-starter-embedded:${versions.libs.infinispan}",
             "org.infinispan:infinispan-core:${versions.libs.infinispan}",
             "org.infinispan:infinispan-commons:${versions.libs.infinispan}",
             "org.infinispan:infinispan-component-annotations:${versions.libs.infinispan}",

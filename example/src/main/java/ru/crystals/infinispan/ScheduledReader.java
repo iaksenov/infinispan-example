@@ -1,5 +1,7 @@
 package ru.crystals.infinispan;
 
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.Transactional;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin;
@@ -15,8 +17,6 @@ import ru.crystals.example.Item;
 import ru.crystals.example.Person;
 import ru.crystals.shop.Shop;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

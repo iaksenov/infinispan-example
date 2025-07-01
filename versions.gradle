@@ -1,17 +1,17 @@
 ext.versions = [
     plugins : [
             docker                  : '0.20.1',
-            springBootVersion       : '2.5.14'
+            springBootVersion       : '3.5.3'
     ],
     libs : [
-//            infinispan               : '15.2.4.Final',
+            infinispan               : '15.2.4.Final',
 //            infinispan               : '14.0.14.Final',
-            infinispan               : '14.0.34.Final',
-            logback                  : '1.2.11',
-            lombok                   : '1.18.26',
-            micrometer               : '1.11.2',
-            postgresql               : '42.6.0',
-            springCloudVersion       : '2020.0.6',
+//            infinispan               : '14.0.34.Final',
+            logback                  : '1.5.18',
+            lombok                   : '1.18.38',
+            micrometer               : '1.15.1',
+            postgresql               : '42.7.7',
+            springCloudVersion       : '2025.0.0',
             hikari                   : '6.3.0'
     ]
 ]
