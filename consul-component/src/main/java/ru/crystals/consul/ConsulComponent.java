@@ -110,8 +110,16 @@ public class ConsulComponent {
         // это всё надо в конфиг:
         check.setDeregisterCriticalServiceAfter("1m");
         check.setTcp(ipAddress+":"+port);
-        check.setTimeout("10s");
-        check.setInterval("3s");
+
+        // частые хелсчеки и небольшой таймаут повышают шансы split brain на старте,
+        // т.к. сервис долго поднимается, и не отвечает на запросы, он будет
+        // "не здоровым", и в DNS не вернется.
+
+        // В проде лучше делать интервал реже, например 30-60 секунд
+        // соответственно и надо повышать setDeregisterCriticalServiceAfter
+        // до 2-3 минут тогда
+        check.setTimeout("2s");
+        check.setInterval("2s");
         payload.setCheck(check);
 
         return payload;

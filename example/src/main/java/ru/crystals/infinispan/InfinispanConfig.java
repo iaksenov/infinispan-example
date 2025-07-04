@@ -1,11 +1,15 @@
 package ru.crystals.infinispan;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.infinispan.Cache;
+import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.partitionhandling.PartitionHandling;
 import org.infinispan.persistence.jdbc.common.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.spring.starter.embedded.InfinispanGlobalConfigurer;
@@ -18,6 +22,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.crystals.consul.ConsulComponent;
+import ru.crystals.example.Person;
+import ru.crystals.shop.Shop;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -25,6 +31,9 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Hashtable;
+
+import static ru.crystals.infinispan.Consts.PERSON_CACHE;
+import static ru.crystals.infinispan.Consts.SHOP_CACHE;
 
 @Configuration
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
@@ -53,11 +62,8 @@ public class InfinispanConfig {
                 .statistics(true)
                 .metrics().gauges(true).histograms(true)
                 .serialization()
-
-                //
                 .marshaller(new JavaSerializationMarshaller())
                 .allowList()
-
                 // Добавление классов в whitelist (де)сериализации является обязательным
                 .addRegexp("ru.crystals.example.*")
                 .addRegexp("ru.crystals.shop.*");
@@ -127,13 +133,42 @@ public class InfinispanConfig {
         return hds;
     }
 
+    @Bean("personCache")
+    public Cache<Long, Person> getPersonCache(EmbeddedCacheManager cacheManager, ConfigurationBuilder builder) {
+        // У этого кэша будут резолвятся конфликты после сплит брейна
+
+        builder.clustering()
+                .partitionHandling()
+                .whenSplit(PartitionHandling.ALLOW_READ_WRITES)
+                .mergePolicy(new PersonMergePolicy());
+//                .mergePolicy(MergePolicy.PREFERRED_ALWAYS)
+
+        return cacheManager.administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache(PERSON_CACHE, builder.build());
+    }
+
+    @Bean("shopCache")
+    public Cache<String, Shop> getShopCache(EmbeddedCacheManager cacheManager, ConfigurationBuilder builder) {
+        // А у этого кэша не будут резолвятся конфликты
+
+//        builder.clustering()
+//                .partitionHandling()
+//                .whenSplit(PartitionHandling.ALLOW_READ_WRITES)
+//                .mergePolicy();
+
+        return cacheManager.administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache(SHOP_CACHE, builder.build());
+    }
+
     /**
      * Конфиг, который будет использоваться по-умолчанию.
      *
      * @return конфиг
      */
     @Bean
-    public org.infinispan.configuration.cache.Configuration storedReplicatedCacheConfig(DataSource dataSource)  {
+    public ConfigurationBuilder storedReplicatedCacheConfig(DataSource dataSource)  {
         ConfigurationBuilder builder = new ConfigurationBuilder();
 
         builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL);
@@ -158,6 +193,7 @@ public class InfinispanConfig {
                 // Это больше всего подходит под задачу
                 .encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .statistics().enabled(true)
+
 
                 // кэш будет персистентным
                 .persistence()
@@ -205,7 +241,7 @@ public class InfinispanConfig {
         // это шаблон
         builder.template(true);
 
-        return builder.build();
+        return builder;
     }
 
 }

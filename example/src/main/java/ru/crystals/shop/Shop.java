@@ -1,7 +1,9 @@
 package ru.crystals.shop;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -10,6 +12,8 @@ import java.io.Serializable;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Shop implements Serializable {
 
     private static final long serialVersionUID =  1L;
@@ -23,5 +27,7 @@ public class Shop implements Serializable {
     private String regionName;
     private long formatId;
     private String formatName;
+
+    private Long lastUpdated = System.currentTimeMillis();
 
 }

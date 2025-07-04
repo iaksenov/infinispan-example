@@ -4,12 +4,12 @@ import jakarta.transaction.TransactionManager;
 import jakarta.transaction.Transactional;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.commons.api.CacheContainerAdmin;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
+import org.infinispan.health.HealthStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,9 +20,6 @@ import ru.crystals.shop.Shop;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static ru.crystals.infinispan.Consts.PERSON_CACHE;
-import static ru.crystals.infinispan.Consts.SHOP_CACHE;
 
 @EnableScheduling
 @Component
@@ -36,54 +33,86 @@ public class ScheduledReader {
     private final Cache<Long, Person> personCache;
     private final Cache<String, Shop> shopCache;
 
-    private final boolean putEnable;
+    private boolean putEnable;
 
-    public ScheduledReader(EmbeddedCacheManager cacheManager, Configuration configuration) {
+    public ScheduledReader(EmbeddedCacheManager cacheManager,
+                           @Qualifier("personCache") Cache<Long, Person> personCache,
+                           @Qualifier("shopCache") Cache<String, Shop> shopCache) {
         LOG.info("ScheduledReader start");
         this.cacheManager = cacheManager;
-
-        this.personCache = cacheManager.administration()
-                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                .getOrCreateCache(PERSON_CACHE, configuration);
-
-        this.shopCache = cacheManager.administration()
-                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                .getOrCreateCache(SHOP_CACHE, configuration);
-
+        this.personCache = personCache;
+        this.shopCache = shopCache;
         this.putEnable = Boolean.parseBoolean(System.getenv("PUT_ENABLE"));
     }
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 250)
     public void putSomeValues() {
         if (putEnable) {
-            AdvancedCache<Long, Person> pcache = personCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
-            TransactionManager transactionManager = pcache.getTransactionManager();
-            try {
-                transactionManager.begin();
-
-                long keyLong = System.currentTimeMillis();
-                String keyStr = String.valueOf(keyLong);
-
-                Person person = new Person(keyStr, "BBB-" + keyStr);
-                person.setItems(Stream.of(new Item("1", 1L)).collect(Collectors.toList()));
-
-                pcache.put(keyLong, person);
-                // generate exception
-//                pcache.put(null, person);
-
-                transactionManager.commit();
-
-                LOG.info("PUT OK!");
-            } catch (Exception e) {
-                try {
-                    if (transactionManager.getTransaction() != null) {
-                        transactionManager.rollback();
-                    }
-                } catch (Exception ex) {
-                    LOG.error("ROLLBACK FAILED !!! ", e);
-                }
-                LOG.error("PUT FAILED !!! ", e);
+            int size = cacheManager.getMembers().size();
+            HealthStatus healthStatus = cacheManager.getHealth().getClusterHealth().getHealthStatus();
+            if (healthStatus == HealthStatus.HEALTHY) {
+                putPerson();
+                putShop();
+            } else {
+                LOG.warn("PUT SKIPPED!! Cluster size " + size + ", health " + healthStatus);
             }
+        }
+    }
+
+    private void putPerson() {
+        AdvancedCache<Long, Person> pcache = personCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+        TransactionManager transactionManager = pcache.getTransactionManager();
+        try {
+            transactionManager.begin();
+
+            long keyLong = System.currentTimeMillis();
+            String keyStr = String.valueOf(keyLong);
+
+            Person person = new Person(keyStr, "BBB-" + keyStr);
+            person.setItems(Stream.of(new Item("1", 1L)).collect(Collectors.toList()));
+
+            pcache.put(keyLong, person);
+            transactionManager.commit();
+
+            LOG.info("PUT OK!");
+        } catch (Exception e) {
+            CacheInfoController.putErrorsCounter.incrementAndGet();
+            try {
+                if (transactionManager.getTransaction() != null) {
+                    transactionManager.rollback();
+                }
+            } catch (Exception ex) {
+                LOG.error("ROLLBACK FAILED !!! ", e);
+            }
+            LOG.error("PUT FAILED !!! ", e);
+        }
+    }
+
+    private void putShop() {
+        AdvancedCache<String, Shop> pcache = shopCache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+        TransactionManager transactionManager = pcache.getTransactionManager();
+        try {
+            transactionManager.begin();
+
+            long id = System.currentTimeMillis();
+            Shop sh = new Shop();
+            sh.setId(id);
+            sh.setName("Shop-" + id);
+            pcache.put(String.valueOf(id), sh);
+
+            transactionManager.commit();
+
+            LOG.info("PUT Shop OK!");
+        } catch (Exception e) {
+            CacheInfoController.putErrorsCounter.incrementAndGet();
+            try {
+                if (transactionManager.getTransaction() != null) {
+                    transactionManager.rollback();
+                }
+            } catch (Exception ex) {
+                LOG.error("ROLLBACK FAILED !!! ", e);
+            }
+            LOG.error("PUT FAILED !!! ", e);
         }
     }
 
@@ -120,6 +149,10 @@ public class ScheduledReader {
         LOG.info("Shop 1 found in cache {}", shop);
 
  */
+    }
+
+    public void setPutEnable(boolean putEnable) {
+        this.putEnable = putEnable;
     }
 
 }

@@ -1,7 +1,7 @@
 FROM bellsoft/liberica-runtime-container:jre-17-slim-musl
 
 ENV WORK_DIR="/app"
-ENV JAVA_OPTS="-Djava.net.preferIPv4Stack=true"
+ENV JAVA_OPTS="-Djava.net.preferIPv4Stack=true -Djava.naming.factory.initial=org.apache.naming.java.javaURLContextFactory "
 ENV JAVA_ARGS=""
 WORKDIR $WORK_DIR
 

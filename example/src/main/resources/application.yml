@@ -6,6 +6,7 @@ spring:
     username: postgres
     password: Set324@_p0stgres012!
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://192.168.0.11:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=infinispan-test
     url: jdbc:postgresql://192.168.1.28:5432/infinispan?reWriteBatchedInserts=true&ApplicationName=infinispan-test
     hikari:
       schema: public
@@ -21,12 +22,13 @@ management:
       exposure:
         include: health,prometheus
   metrics:
-    export:
-      prometheus:
-        enabled: true
     distribution:
       percentiles-histogram:
         "[http.server.requests]": true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 server:
   port: 8080

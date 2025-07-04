@@ -25,14 +25,15 @@
                   dns_query="${INFINISPAN_CLUSTER_NAME}.service.consul"
                   dns_record_type="SRV"
                   probe_transport_ports="false"
-                  send_cache_on_join="true"/>
+                  send_cache_on_join="false"
+                    />
 
-    <MERGE3 min_interval="10000" max_interval="30000"/>
+    <MERGE3 min_interval="3000" max_interval="30000"/>
     <!--TCPPING async_discovery="false" port_range="1"/-->
     <FD_SOCK sock_conn_timeout="5000"/>
     <FD_ALL3 timeout="3000" interval="1000"/>
     <VERIFY_SUSPECT2 timeout="1000"/>
-    <!-- BARRIER/-->
+    <BARRIER/>
     <pbcast.NAKACK2
             use_mcast_xmit="false"
             xmit_interval="200"
@@ -53,8 +54,8 @@
     <pbcast.GMS
             print_local_addr="true"
             join_timeout="10000"
-            max_join_attempts="5"
-            max_leave_attempts="5"
+            max_join_attempts="3"
+            max_leave_attempts="3"
             print_view_details="true"/>
 
     <UFC max_credits="2M" min_threshold="0.4"/>
